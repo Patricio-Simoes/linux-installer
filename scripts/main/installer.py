@@ -1,0 +1,238 @@
+from datetime import datetime
+import logging
+from packages import BROWSERS, DEV_TOOLS, EMAIL_CLIENTS, ENCRYPTION_TOOLS, FILE_MANAGERS, GAMING_PACKAGES, MULTIMEDIA_TOOLS, NOTE_TAKING_APPS, TERMINALS
+import os
+import subprocess
+
+SCRIPT_DIR = os.environ['SCRIPT_DIR']
+LOG_DIR = os.environ['LOG_DIR']
+
+class Installer:
+    def __init__(self):
+        """
+        Initialize the installer class with environment variables, package lists, and logging configuration.
+
+        Sets up package lists for fonts, utilities, and aggregates all packages from predefined categories.
+        Initializes empty lists for apt, custom, and flatpak packages.
+        Configures logging to a file in the specified log directory with the current date and time.
+
+        Attributes
+        ----------
+        DISTRO : str
+            The Linux distribution ID from the environment variable 'DISTRO_ID'.
+        FONT_PKGS : list of str
+            List of font package names to be installed.
+        UTILITY_PKGS : list of str
+            List of utility package names to be installed.
+        all_packages : list of str
+            Aggregated list of all packages from various categories.
+        apt_packages : list of str
+            List to store packages to be installed via apt.
+        custom_packages : list of str
+            List to store custom packages.
+        flatpak_packages : list of str
+            List to store packages to be installed via Flatpak.
+        INSTALL_LOG_FILE_LOCATION : str
+            Path to the log file for installation logs.
+        """
+        self.DISTRO = os.environ['DISTRO_ID']
+        self.FONT_PKGS=["fonts-font-awesome", "fonts-recommended", "fonts-roboto", "fonts-terminus"]
+        self.UTILITY_PKGS=["curl", "flatpak", "git", "gpg", "libavcodec-extra", "libspa-0.2-bluetooth", "neofetch", "pipewire", "pipewire-alsa", "pipewire-pulse", "software-properties-common", "vim", "zram-tools"]
+        self.all_packages = BROWSERS + DEV_TOOLS + EMAIL_CLIENTS + ENCRYPTION_TOOLS + FILE_MANAGERS + GAMING_PACKAGES + MULTIMEDIA_TOOLS + NOTE_TAKING_APPS + TERMINALS
+        self.apt_packages = []
+        self.custom_packages = []
+        self.flatpak_packages = []
+        #? Set up logging configuration
+        os.makedirs(LOG_DIR, exist_ok=True)
+        CURRENT_DATE = datetime.now().strftime("%d_%m_%Y_%H-%M")
+        LOG_FILE = f"Install_{CURRENT_DATE}.txt"
+        self.INSTALL_LOG_FILE_LOCATION = os.path.join(LOG_DIR, LOG_FILE)
+        logging.basicConfig(filename=self.INSTALL_LOG_FILE_LOCATION, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+    def filter_app_packages(self, packages):
+        """
+        Filters and categorizes application packages based on the selected package names and the current Linux distribution.
+
+        For each selected package name in `packages`, this function searches through `self.all_packages` to find a matching package.
+        Depending on the distribution (`self.DISTRO`), it appends the appropriate package identifier to the corresponding list:
+        - For Debian-based distributions, it prioritizes custom scripts, then APT packages, and finally Flatpak packages.
+
+        Parameters
+        ----------
+        packages : list
+            A list of package names selected for installation.
+
+        Returns
+        -------
+        None
+
+        Side Effects
+        ------------
+        Modifies the following instance attributes:
+        - self.custom_packages : list
+            Appends custom script identifiers for selected packages.
+        - self.apt_packages : list
+            Appends APT package names for selected packages.
+        - self.flatpak_packages : list
+            Appends Flatpak package names for selected packages.
+        """
+        for selected_pkg in packages:
+            for pkg in self.all_packages:
+                if selected_pkg == pkg["Name"]:
+                    #? Debian distros.
+                    if self.DISTRO in ["debian"]:
+                        if pkg["Custom_Script"] != "":
+                            self.custom_packages.append(pkg["Custom_Script"])
+                        elif pkg["APT_Package"] != "":
+                            self.apt_packages.append(pkg["APT_Package"])
+                        elif pkg["Flatpak_Package"] != "":
+                            self.flatpak_packages.append(pkg["Flatpak_Package"])
+
+    def build_app_install_commands(self):
+        """
+        Constructs the installation commands for APT and Flatpak based on the filtered package lists.
+
+        Generates command strings for installing packages using APT and Flatpak, incorporating
+        the respective package lists. The commands are formatted to be executed in a shell environment.
+
+        :returns: Tuple containing the APT and Flatpak installation command strings.
+        :rtype: tuple
+        """
+        APT_FONT_STR = f"sudo apt install -y {' '.join(self.FONT_PKGS)}"
+        APT_UTILITY_STR = f"sudo apt install -y {' '.join(self.UTILITY_PKGS)}"
+        APT_STR = f"sudo apt install -y {' '.join(self.apt_packages)}"
+        CUSTOM_STR = " ; ".join([f"bash {script}" for script in self.custom_packages]) if self.custom_packages else ""
+        FLATPAK_STR = f"flatpak --user install -y {' '.join(self.flatpak_packages)}"
+        return APT_FONT_STR, APT_UTILITY_STR,CUSTOM_STR, APT_STR, FLATPAK_STR
+
+    def install_environment(self, packages):
+        """
+        Installs the specified environment packages on the system.
+
+        This method first updates and upgrades the system packages,
+        then installs the provided list of packages using apt.
+
+        :param packages: List of package names to install.
+        :type packages: list[str]
+        """
+        ENVIRONMENT_STR = "sudo apt install -y " + " ".join(packages)
+        SYSTEM_UPDATE_STR = "sudo apt update --fix-missing && sudo apt upgrade -y"
+        self.execute_subprocess(SYSTEM_UPDATE_STR, "Updating system packages...")
+        self.setup_firewall()
+        self.setup_dns()
+        self.execute_subprocess(ENVIRONMENT_STR)
+        
+    def install_app_packages(self):
+        """
+        Installs application packages using various package managers and custom scripts.
+
+        This method builds installation commands for fonts, utilities, custom scripts,
+        APT packages, and Flatpak packages. It executes each command sequentially,
+        providing status messages for certain steps. The Flathub Flatpak repository is
+        added at the user level if not already present.
+
+        Returns
+        -------
+        None
+
+        Notes
+        -----
+        - The installation commands are generated by `build_app_install_commands()`.
+        - Custom installation scripts are executed only if specified.
+        - APT and Flatpak package installations are performed only if their respective
+          command strings are not empty.
+        """
+        APT_FONT_STR, APT_UTILITY_STR, CUSTOM_STR, APT_STR, FLATPAK_STR = self.build_app_install_commands()
+        self.execute_subprocess(APT_FONT_STR, "Installing font packages...")
+        self.execute_subprocess(APT_UTILITY_STR, "Installing utility packages...")
+        self.execute_subprocess("flatpak remote-add --if-not-exists --user flathub https://dl.flathub.org/repo/flathub.flatpakrepo", "Adding flathub repository at user level...")
+        if CUSTOM_STR != "":
+            self.execute_subprocess(CUSTOM_STR, "Executing custom installation scripts...")
+        if APT_STR != "":
+            self.execute_subprocess(APT_STR)
+        if FLATPAK_STR != "":
+            self.execute_subprocess(FLATPAK_STR)
+    
+    def execute_subprocess(self, command, description = ""):
+        """
+        Executes a shell command as a subprocess and logs the result.
+
+        Parameters
+        ----------
+        command : str
+            The shell command to execute.
+        description : str, optional
+            A description to display before executing the command. If not provided, the command itself is printed.
+
+        Returns
+        -------
+        None
+
+        Logs
+        ----
+        Logs the success or failure of the command execution, including output and error messages.
+
+        Prints
+        ------
+        Prints the description or command being executed, and a message indicating success or error.
+        """
+        if description == "":
+            print(f"Executing {command}...")
+        else:
+            print(description)
+        result = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        if result.returncode == 0:
+            print("Command executed with success!")
+            logging.info(f"SUCCESS: {command}\nOutput: {result.stdout.strip()}")
+        else:
+            print("Command encountered an unexpected error.")
+            logging.error(f"ERROR: {command}\nReturn Code: {result.returncode}\nOutput: {result.stdout.strip()}\nError: {result.stderr.strip()}")
+
+    def setup_firewall(self):
+        """
+        Sets up and enables the UFW firewall with default rules.
+
+        This method installs UFW if it is not already installed, enables it,
+        sets the default incoming and outgoing rules, and displays the firewall status.
+
+        Returns
+        -------
+        None
+
+        Notes
+        -----
+        - Incoming connections are denied by default.
+        - Outgoing connections are allowed by default.
+        """
+        self.execute_subprocess("sudo apt install ufw -y && sudo ufw enable && sudo ufw default deny incoming && sudo ufw default allow outgoing && sudo ufw status verbose", "Installing UFW firewall...")
+
+    def setup_dns(self):
+        """
+        Configures the system to use Quad9 DNS servers by updating /etc/resolv.conf.
+
+        This method performs the following steps:
+        - Removes the immutable attribute from /etc/resolv.conf if it exists.
+        - Deletes and recreates /etc/resolv.conf.
+        - Adds Quad9 DNS server addresses (9.9.9.9 and 149.112.112.112) to the file.
+        - Sets the immutable attribute on /etc/resolv.conf to prevent further changes.
+
+        Uses elevated privileges (sudo) for file operations.
+
+        Raises
+        ------
+        SubprocessError
+            If the subprocess execution fails.
+        """
+        DNS_SERVERS = ("9.9.9.9", "149.112.112.112")
+        COMMAND = f"""
+        if [[ -f '/etc/resolv.conf' ]]; then 
+            sudo chattr -i /etc/resolv.conf && 
+            sudo rm /etc/resolv.conf && 
+            sudo touch /etc/resolv.conf; 
+        fi; 
+        echo 'nameserver {DNS_SERVERS[0]}' | sudo tee -a /etc/resolv.conf > /dev/null; 
+        echo 'nameserver {DNS_SERVERS[1]}' | sudo tee -a /etc/resolv.conf > /dev/null; 
+        sudo chattr +i /etc/resolv.conf
+        """
+
+        self.execute_subprocess(COMMAND, "Installing Quad9 DNS servers...")
