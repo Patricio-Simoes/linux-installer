@@ -118,8 +118,6 @@ class Installer:
         ENVIRONMENT_STR = "sudo apt install -y " + " ".join(packages)
         SYSTEM_UPDATE_STR = "sudo apt update --fix-missing && sudo apt upgrade -y"
         self.execute_subprocess(SYSTEM_UPDATE_STR, "Updating system packages...")
-        self.setup_firewall()
-        self.setup_dns()
         self.execute_subprocess(ENVIRONMENT_STR)
         
     def install_app_packages(self):
@@ -206,33 +204,11 @@ class Installer:
         """
         self.execute_subprocess("sudo apt install ufw -y && sudo ufw enable && sudo ufw default deny incoming && sudo ufw default allow outgoing && sudo ufw status verbose", "Installing UFW firewall...")
 
-    def setup_dns(self):
+    def setup_dns(self, server):
         """
-        Configures the system to use Quad9 DNS servers by updating /etc/resolv.conf.
+        Configure the DNS server by executing a custom script.
 
-        This method performs the following steps:
-        - Removes the immutable attribute from /etc/resolv.conf if it exists.
-        - Deletes and recreates /etc/resolv.conf.
-        - Adds Quad9 DNS server addresses (9.9.9.9 and 149.112.112.112) to the file.
-        - Sets the immutable attribute on /etc/resolv.conf to prevent further changes.
-
-        Uses elevated privileges (sudo) for file operations.
-
-        Raises
-        ------
-        SubprocessError
-            If the subprocess execution fails.
+        :param server: The DNS server address to configure.
+        :type server: str
         """
-        DNS_SERVERS = ("9.9.9.9", "149.112.112.112")
-        COMMAND = f"""
-        if [[ -f '/etc/resolv.conf' ]]; then 
-            sudo chattr -i /etc/resolv.conf && 
-            sudo rm /etc/resolv.conf && 
-            sudo touch /etc/resolv.conf; 
-        fi; 
-        echo 'nameserver {DNS_SERVERS[0]}' | sudo tee -a /etc/resolv.conf > /dev/null; 
-        echo 'nameserver {DNS_SERVERS[1]}' | sudo tee -a /etc/resolv.conf > /dev/null; 
-        sudo chattr +i /etc/resolv.conf
-        """
-
-        self.execute_subprocess(COMMAND, "Installing Quad9 DNS servers...")
+        self.execute_subprocess(f"{SCRIPT_DIR}/scripts/custom/dns.sh {server}", f"Setting up {server} DNS...")

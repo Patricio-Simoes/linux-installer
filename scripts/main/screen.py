@@ -110,7 +110,7 @@ class Screen:
         """
         key == curses.KEY_RIGHT and (row % max_columns) < (max_columns - 1) and (row + 1) < len(list)
 
-    def is_key_select(self, key):
+    def is_key_toggle_select(self, key):
         """
         Check if the given key corresponds to a selection action.
 
@@ -118,11 +118,11 @@ class Screen:
             key (int): The key code to check.
 
         Returns:
-            bool: True if the key is Enter or Space (selection keys), False otherwise.
+            bool: True if the key is Space, False otherwise.
         """
-        return key in (curses.KEY_ENTER, 10, 13, 32)
+        return key == 32
     
-    def is_key_finish(self, key):
+    def is_key_select(self, key):
         """
         Checks if the provided key corresponds to the 'finish' action.
 
@@ -130,9 +130,9 @@ class Screen:
             key (int): The key code to check.
 
         Returns:
-            bool: True if the key is 'f' or 'F', False otherwise.
+            bool: True if the key is Enter, False otherwise.
         """
-        return key in (ord('f'), ord('F'))
+        return key in (curses.KEY_ENTER, 10, 13)
 
     def display_menu(self, packages, instructions, max_columns=1):
 
@@ -180,9 +180,9 @@ class Screen:
                 current_row -= 1
             elif self.is_key_right(key, current_row, max_columns, packages):
                 current_row += 1
-            elif self.is_key_select(key):
+            elif self.is_key_toggle_select(key):
                 selected[current_row] = not selected[current_row]
-            elif self.is_key_finish(key):
+            elif self.is_key_select(key):
                 finished = True
 
             self.stdscr.clear()
@@ -244,9 +244,9 @@ class Screen:
                 current_row -= 1
             elif self.is_key_right(key, current_row, max_columns, items):
                 current_row += 1
-            elif self.is_key_select(key):
+            elif self.is_key_toggle_select(key):
                 selected[current_row] = not selected[current_row]
-            elif self.is_key_finish(key):
+            elif self.is_key_select(key):
                 finished = True
 
             self.stdscr.clear()
