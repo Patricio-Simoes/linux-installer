@@ -1,14 +1,36 @@
-CATEGORIES = ["Browsers", "Dev Tools", "E-mail Clients", "Encryption Tools", "File Managers", "Finish", "Gaming Packages", "Multimedia Tools", "Note Taking Tools", "Terminals"]
+CATEGORIES = ["0. Exit", "1. Applications", "2. DNS Servers"]
+APP_CATEGORIES = [
+    "0. Exit",
+    "1. Browsers",
+    "2. Dev Tools",
+    "3. E-mail Clients",
+    "4. Encryption Tools",
+    "5. File Managers",
+    "6. Gaming Packages",
+    "7. Multimedia Tools",
+    "8. Note Taking Tools",
+    "9. Terminals",
+]
+DNS_SERVERS = ["0. Exit", "1. Cloudflare", "2. Quad9", "3. Google"]
 
 ENVIRONMENTS = [
     {
         "Name": "Minimal KDE",
-        "Debian_Packages": ["kde-plasma-desktop", "plasma-discover-backend-flatpak", "plasma-nm", "sddm-theme-breeze "]
+        "Debian_Packages": [
+            "kde-plasma-desktop",
+            "plasma-discover-backend-flatpak",
+            "plasma-nm",
+            "sddm-theme-breeze ",
+        ],
     },
     {
         "Name": "Minimal Gnome",
-        "Debian_Packages": ["gnome-session", "gnome-software-plugin-flatpak"],
-    }
+        "Debian_Packages": [
+            "gnome-session",
+            "gnome-software-plugin-flatpak",
+            "gnome-terminal",
+        ],
+    },
 ]
 
 BROWSERS = [
@@ -16,26 +38,26 @@ BROWSERS = [
         "Name": "Brave",
         "APT_Package": "",
         "Custom_Script": "",
-        "Flatpak_Package": "com.brave.Browser"
+        "Flatpak_Package": "com.brave.Browser",
     },
     {
         "Name": "Firefox",
         "APT_Package": "",
         "Custom_Script": "",
-        "Flatpak_Package": "org.mozilla.firefox"
+        "Flatpak_Package": "org.mozilla.firefox",
     },
     {
         "Name": "Libre Wolf",
         "APT_Package": "",
         "Custom_Script": "",
-        "Flatpak_Package": "io.gitlab.librewolf-community"
+        "Flatpak_Package": "io.gitlab.librewolf-community",
     },
     {
         "Name": "Zen Browser",
         "APT_Package": "",
         "Custom_Script": "",
-        "Flatpak_Package": "app.zen_browser.zen"
-    }
+        "Flatpak_Package": "app.zen_browser.zen",
+    },
 ]
 
 DEV_TOOLS = [
@@ -43,14 +65,14 @@ DEV_TOOLS = [
         "Name": "Bruno",
         "APT_Package": "",
         "Custom_Script": "",
-        "Flatpak_Package": "com.usebruno.Bruno"
+        "Flatpak_Package": "com.usebruno.Bruno",
     },
     {
         "Name": "Filezilla",
         "APT_Package": "filezilla",
         "Custom_Script": "",
-        "Flatpak_Package": "org.filezillaproject.Filezilla"
-    }
+        "Flatpak_Package": "org.filezillaproject.Filezilla",
+    },
 ]
 
 EMAIL_CLIENTS = [
@@ -58,14 +80,14 @@ EMAIL_CLIENTS = [
         "Name": "Betterbird",
         "APT_Package": "",
         "Custom_Script": "",
-        "Flatpak_Package": "eu.betterbird.Betterbird"
+        "Flatpak_Package": "eu.betterbird.Betterbird",
     },
     {
         "Name": "Thunderbird",
         "APT_Package": "",
         "Custom_Script": "",
-        "Flatpak_Package": "org.mozilla.Thunderbird"
-    }
+        "Flatpak_Package": "org.mozilla.Thunderbird",
+    },
 ]
 
 ENCRYPTION_TOOLS = [
@@ -73,14 +95,14 @@ ENCRYPTION_TOOLS = [
         "Name": "Cryptomator",
         "APT_Package": "",
         "Custom_Script": "",
-        "Flatpak_Package": "org.cryptomator.Cryptomator"
+        "Flatpak_Package": "org.cryptomator.Cryptomator",
     },
     {
         "Name": "Veracrypt",
         "APT_Package": "",
         "Custom_Script": "$SCRIPT_DIR/scripts/custom/veracrypt.sh",
-        "Flatpak_Package": ""
-    }
+        "Flatpak_Package": "",
+    },
 ]
 
 FILE_MANAGERS = [
@@ -88,26 +110,26 @@ FILE_MANAGERS = [
         "Name": "Dolphin",
         "APT_Package": "dolphin",
         "Custom_Script": "",
-        "Flatpak_Package": ""
+        "Flatpak_Package": "",
     },
     {
         "Name": "Nautilus",
         "APT_Package": "nautilus",
         "Custom_Script": "",
-        "Flatpak_Package": ""
+        "Flatpak_Package": "",
     },
     {
         "Name": "PCManFM",
         "APT_Package": "pcmanfm",
         "Custom_Script": "",
-        "Flatpak_Package": ""
+        "Flatpak_Package": "",
     },
     {
         "Name": "Thunar",
         "APT_Package": "thunar",
         "Custom_Script": "",
-        "Flatpak_Package": ""
-    }
+        "Flatpak_Package": "",
+    },
 ]
 
 GAMING_PACKAGES = [
@@ -115,26 +137,26 @@ GAMING_PACKAGES = [
         "Name": "Heroic Games Launcher",
         "APT_Package": "",
         "Custom_Script": "",
-        "Flatpak_Package": "com.heroicgameslauncher.hgl"
+        "Flatpak_Package": "com.heroicgameslauncher.hgl",
     },
     {
         "Name": "Lutris",
         "APT_Package": "",
         "Custom_Script": "",
-        "Flatpak_Package": "net.lutris.Lutris"
+        "Flatpak_Package": "net.lutris.Lutris",
     },
     {
         "Name": "Prism Launcher",
         "APT_Package": "",
         "Custom_Script": "",
-        "Flatpak_Package": "org.prismlauncher.PrismLauncher"
+        "Flatpak_Package": "org.prismlauncher.PrismLauncher",
     },
     {
         "Name": "Steam",
         "APT_Package": "",
         "Custom_Script": "",
-        "Flatpak_Package": "com.valvesoftware.Steam"
-    }
+        "Flatpak_Package": "com.valvesoftware.Steam",
+    },
 ]
 
 MULTIMEDIA_TOOLS = [
@@ -142,38 +164,38 @@ MULTIMEDIA_TOOLS = [
         "Name": "Freetube",
         "APT_Package": "",
         "Custom_Script": "",
-        "Flatpak_Package": "io.freetubeapp.FreeTube"
+        "Flatpak_Package": "io.freetubeapp.FreeTube",
     },
     {
         "Name": "Gimp",
         "APT_Package": "gimp",
         "Custom_Script": "",
-        "Flatpak_Package": "org.gimp.GIMP"
+        "Flatpak_Package": "org.gimp.GIMP",
     },
     {
         "Name": "Jellyfin Media Player",
         "APT_Package": "",
         "Custom_Script": "",
-        "Flatpak_Package": "com.github.iwalton3.jellyfin-media-player"
+        "Flatpak_Package": "com.github.iwalton3.jellyfin-media-player",
     },
     {
         "Name": "Libre Office",
         "APT_Package": "libreoffice",
         "Custom_Script": "",
-        "Flatpak_Package": "org.libreoffice.LibreOffice"
+        "Flatpak_Package": "org.libreoffice.LibreOffice",
     },
     {
         "Name": "MkvToolNix",
         "APT_Package": "",
         "Custom_Script": "",
-        "Flatpak_Package": "org.bunkus.mkvtoolnix-gui"
+        "Flatpak_Package": "org.bunkus.mkvtoolnix-gui",
     },
     {
         "Name": "VLC",
         "APT_Package": "vlc",
         "Custom_Script": "",
-        "Flatpak_Package": "org.videolan.VLC"
-    }
+        "Flatpak_Package": "org.videolan.VLC",
+    },
 ]
 
 NOTE_TAKING_APPS = [
@@ -181,20 +203,20 @@ NOTE_TAKING_APPS = [
         "Name": "Obsidian",
         "APT_Package": "",
         "Custom_Script": "",
-        "Flatpak_Package": "md.obsidian.Obsidian"
+        "Flatpak_Package": "md.obsidian.Obsidian",
     },
     {
         "Name": "Trillium Notes",
         "APT_Package": "",
         "Custom_Script": "",
-        "Flatpak_Package": "com.github.zadam.trilium"
+        "Flatpak_Package": "com.github.zadam.trilium",
     },
     {
         "Name": "Zettlr",
         "APT_Package": "",
         "Custom_Script": "",
-        "Flatpak_Package": "com.zettlr.Zettlr"
-    }
+        "Flatpak_Package": "com.zettlr.Zettlr",
+    },
 ]
 
 TERMINALS = [
@@ -202,12 +224,12 @@ TERMINALS = [
         "Name": "Allacrity",
         "APT_Package": "alacritty",
         "Custom_Script": "",
-        "Flatpak_Package": ""
+        "Flatpak_Package": "",
     },
     {
         "Name": "Kitty",
         "APT_Package": "kitty",
         "Custom_Script": "",
-        "Flatpak_Package": ""
-    }
+        "Flatpak_Package": "",
+    },
 ]
