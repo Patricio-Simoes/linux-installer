@@ -146,7 +146,7 @@ class Screen:
             for idx, line in enumerate(instructions):
                 self.display_str(line, 0, FIRST_ROW + idx)
 
-            #? Display selection options. ('Name' field of the dictionary)
+            #? Display selection options. ('Name' field of the dictionary).
             for idx, env in enumerate(packages):
                 col = idx % max_columns
                 row = idx // max_columns + FIRST_ROW + len(instructions) + 1
@@ -160,7 +160,7 @@ class Screen:
                 except curses.error:
                     pass
 
-            #? Display selected packages summary
+            #? Display selected packages summary.
             selected_list = [env.get("Name", str(env)) for idx, env in enumerate(packages) if selected[idx]]
             summary_str = "Selected Packages: " + (", ".join(selected_list) if selected_list else "None")
             try:
@@ -191,20 +191,23 @@ class Screen:
 
         return selected_list
     
-    def display_categories(self, items, title="Select a category to proceed", max_columns=1):
+    def display_categories(self, items, title="Select a category to proceed", max_columns=1, multiple=False):
         """
-        Displays a list of items as togglable checkbox options in the terminal UI.
+        Displays a list of items as togglable options in the terminal UI.
 
         Args:
-            items (list): List of strings to display as checkbox items.
+            items (list): List of strings to display as options.
             title (str): Title to display above the list.
             max_columns (int): Number of columns for the checkbox grid.
+            multiple (bool): If True, allows multiple selections (checkboxes), 
+                            else allows only one selection (radio buttons).
 
         Returns:
-            list: List of selected item strings.
+            list or str: List of selected item strings if multiple is True, 
+                        or the selected item string if False.
         """
         current_row = 0
-        selected = [False] * len(items)
+        selected_indices = [] if multiple else -1  # Track multiple selections or single selection
         finished = False
 
         while not finished:
@@ -212,22 +215,31 @@ class Screen:
             self.display_ascii_menu()
             self.display_str(title, 0, FIRST_ROW)
 
-            #? Display checkbox items
+            # Display items with appropriate selection indicators
             for idx, item in enumerate(items):
                 col = idx % max_columns
                 row = idx // max_columns + FIRST_ROW + 2
                 if row >= self.height - 3:
                     break
-                checkbox = "[x]" if selected[idx] else "[ ]"
+
+                if multiple:
+                    checkbox = "[x]" if idx in selected_indices else "[ ]"
+                else:
+                    checkbox = "[x]" if idx == selected_indices else "[ ]"
+
                 attr = curses.A_REVERSE if idx == current_row else curses.A_NORMAL
                 try:
                     self.stdscr.addstr(row, col * (self.width // max_columns), f"{checkbox} {item}", attr)
                 except curses.error:
                     pass
 
-            #? Display selected summary
-            selected_list = [item for idx, item in enumerate(items) if selected[idx]]
-            summary_str = "Selected: " + (", ".join(selected_list) if selected_list else "None")
+            # Display selected summary
+            if multiple:
+                selected_list = [items[idx] for idx in selected_indices] if selected_indices else []
+                summary_str = "Selected: " + (", ".join(selected_list) if selected_list else "None")
+            else:
+                summary_str = f"Selected: {items[selected_indices]}" if selected_indices != -1 else "Selected: None"
+
             try:
                 self.stdscr.addstr(self.height - 2, 0, summary_str[:self.width])
             except curses.error:
@@ -245,11 +257,24 @@ class Screen:
             elif self.is_key_right(key, current_row, max_columns, items):
                 current_row += 1
             elif self.is_key_toggle_select(key):
-                selected[current_row] = not selected[current_row]
+                if multiple:
+                    if current_row in selected_indices:
+                        selected_indices.remove(current_row)  # Deselect
+                    else:
+                        selected_indices.append(current_row)  # Select
+                else:
+                    selected_indices = current_row  # Set selected index to current row for single selection
             elif self.is_key_select(key):
-                finished = True
+                if multiple or selected_indices != -1:  # Finish if multiple selection or valid single selection
+                    finished = True
 
-            self.stdscr.clear()
+            # Ensure current_row is within valid bounds
+            current_row = max(0, min(current_row, len(items) - 1))
 
         self.close()
-        return selected_list
+        
+        if multiple:
+            return [items[idx] for idx in selected_indices]  # Return list of selected items
+        if selected_indices != -1:
+            return items[selected_indices]  # Return format for single selection
+        return None  # Return None if no selection was made

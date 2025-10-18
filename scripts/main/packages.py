@@ -1,4 +1,21 @@
-CATEGORIES = ["0. Exit", "1. Applications", "2. DNS Servers"]
+CATEGORIES = ["0. Exit", "1. Applications", "2. DNS Servers", "3. VPN Clients"]
+
+COMMON = {
+    "FONTS": [
+        {
+            "Distro": "debian",
+            "Packages": ["fonts-font-awesome", "fonts-recommended", "fonts-roboto", "fonts-terminus"]
+        }
+    ],
+
+    "UTILITY_PACKAGES": [
+        {
+            "Distro": "debian",
+            "Packages": ["curl", "fastfetch", "flatpak", "git", "gnupg2", "gpg", "libavcodec-extra", "libspa-0.2-bluetooth", "pipewire", "pipewire-alsa", "pipewire-pulse", "vim", "zram-tools"]
+        }
+    ]
+}
+
 APP_CATEGORIES = [
     "0. Exit",
     "1. Browsers",
@@ -11,7 +28,10 @@ APP_CATEGORIES = [
     "8. Note Taking Tools",
     "9. Terminals",
 ]
+
 DNS_SERVERS = ["0. Exit", "1. Cloudflare", "2. Quad9", "3. Google"]
+
+VPN_CLIENTS = ["0. Exit", "1. Mullvad", "2. Proton"]
 
 ENVIRONMENTS = [
     {
@@ -29,6 +49,8 @@ ENVIRONMENTS = [
             "gnome-session",
             "gnome-software-plugin-flatpak",
             "gnome-terminal",
+            "gnome-text-editor",
+            "nautilus"
         ],
     },
 ]

@@ -23,12 +23,15 @@ export SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 export LOG_DIR="$SCRIPT_DIR/logs"
 
+chmod 700 "$SCRIPT_DIR/scripts/custom/"*.sh
+chmod 700 "$SCRIPT_DIR/scripts/custom/VPNs/"*.sh
+chmod 700 "$SCRIPT_DIR/scripts/custom/Firewalls/"*.sh
+
 #? Determine the distro the user is using.
 if [ -f /etc/os-release ];then
     export DISTRO_ID=$(grep '^ID=' /etc/os-release | cut -d'=' -f2 | tr -d '"')
     mkdir -p "$LOG_DIR"
     if [[ " ${SUPPORTED_DISTROS[@]} " =~ " $DISTRO_ID " ]]; then
-        echo "Distro $DISTRO_ID is supported."
         sudo apt install python -y > /dev/null 2>&1
     else
         exit "Distro $DISTRO_ID is not supported. Supported distros are: ${SUPPORTED_DISTROS[*]}"
