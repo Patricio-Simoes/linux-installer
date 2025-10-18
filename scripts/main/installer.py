@@ -47,7 +47,7 @@ class Installer:
         self.all_packages = packages.BROWSERS + packages.DEV_TOOLS + packages.EMAIL_CLIENTS + packages.ENCRYPTION_TOOLS + packages.FILE_MANAGERS + packages.GAMING_PACKAGES + packages.MULTIMEDIA_TOOLS + packages.NOTE_TAKING_APPS + packages.TERMINALS
         self.apt_packages = []
         self.custom_packages = []
-        self.flatpak_packages = []
+        self.flatpak_packages = ["com.github.tchx84.Flatseal"]
         #? Set up logging configuration
         os.makedirs(LOG_DIR, exist_ok=True)
         CURRENT_DATE = datetime.now().strftime("%d_%m_%Y_%H-%M")
@@ -153,9 +153,9 @@ class Installer:
         if CUSTOM_STR != "":
             self.execute_subprocess(CUSTOM_STR, "Executing custom installation scripts...")
         if APT_STR != "":
-            self.execute_subprocess(APT_STR)
+            self.execute_subprocess(APT_STR, "Installing APT packages...")
         if FLATPAK_STR != "":
-            self.execute_subprocess(FLATPAK_STR)
+            self.execute_subprocess(FLATPAK_STR, "Installing Flatpak packages...")
     
     def execute_subprocess(self, command, description = ""):
         """
@@ -228,3 +228,16 @@ class Installer:
         :raises subprocess.CalledProcessError: If the subprocess execution fails.
         """
         self.execute_subprocess(f"{SCRIPT_DIR}/scripts/custom/VPNs/{client}.sh", f"Setting up {client.capitalize()} VPN...")
+
+    def install_nvidia_drivers(self):
+        """
+        Installs NVIDIA drivers by executing a custom script.
+
+        This method runs a shell script located in the specified directory
+        to install NVIDIA drivers. The script is executed as a subprocess,
+        and a message is displayed to indicate the operation.
+
+        Raises:
+            subprocess.SubprocessError: If the subprocess execution fails.
+        """
+        self.execute_subprocess(f"{SCRIPT_DIR}/scripts/custom/System_Utilities/nvidia_drivers.sh", "Installing NVIDIA drivers...")
