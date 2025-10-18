@@ -4,7 +4,11 @@ This project provides a modular and extensible Linux installation toolkit, inclu
 
 ![Preview](./assets/cli_preview.png)
 
+![Preview](./assets/cli_preview_2.png)
+
 ## Folder Structure
+
+- logs/ : Generated during `init.sh` executing; Folder containing installation logs.
 
 - scripts/main/ : Contains the main Python modules and utilities for the installer:
 
@@ -16,9 +20,8 @@ This project provides a modular and extensible Linux installation toolkit, inclu
 
 - scripts/custom/ : Custom shell scripts for installing and configuring specific applications:
 
-  - `docker.sh`: Docker installation and setup.
-  - `veracrypt.sh`: VeraCrypt installation and setup.
-  - `vscodium.sh`: VSCodium installation and setup.
+  - Firewalls/: Custom Firewall install scripts.
+  - VPNs/: Custom VPN clients install scripts.
 
 - `init.sh` : Main shell script to initialize the installer, detect the Linux distribution, and launch the Python installer.
 

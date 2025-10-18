@@ -1,6 +1,6 @@
 from datetime import datetime
 import logging
-from packages import BROWSERS, DEV_TOOLS, EMAIL_CLIENTS, ENCRYPTION_TOOLS, FILE_MANAGERS, GAMING_PACKAGES, MULTIMEDIA_TOOLS, NOTE_TAKING_APPS, TERMINALS
+import packages
 import os
 import subprocess
 
@@ -36,9 +36,15 @@ class Installer:
             Path to the log file for installation logs.
         """
         self.DISTRO = os.environ['DISTRO_ID']
-        self.FONT_PKGS=["fonts-font-awesome", "fonts-recommended", "fonts-roboto", "fonts-terminus"]
-        self.UTILITY_PKGS=["curl", "flatpak", "git", "gpg", "libavcodec-extra", "libspa-0.2-bluetooth", "neofetch", "pipewire", "pipewire-alsa", "pipewire-pulse", "software-properties-common", "vim", "zram-tools"]
-        self.all_packages = BROWSERS + DEV_TOOLS + EMAIL_CLIENTS + ENCRYPTION_TOOLS + FILE_MANAGERS + GAMING_PACKAGES + MULTIMEDIA_TOOLS + NOTE_TAKING_APPS + TERMINALS
+        self.FONT_PKGS = []
+        self.UTILITY_PKGS = []
+        for item in packages.COMMON["FONTS"]:
+            if item["Distro"] == self.DISTRO:
+                self.FONT_PKGS=item["Packages"]
+        for item in packages.COMMON["UTILITY_PACKAGES"]:
+            if item["Distro"] == self.DISTRO:
+                self.UTILITY_PKGS=item["Packages"]
+        self.all_packages = packages.BROWSERS + packages.DEV_TOOLS + packages.EMAIL_CLIENTS + packages.ENCRYPTION_TOOLS + packages.FILE_MANAGERS + packages.GAMING_PACKAGES + packages.MULTIMEDIA_TOOLS + packages.NOTE_TAKING_APPS + packages.TERMINALS
         self.apt_packages = []
         self.custom_packages = []
         self.flatpak_packages = []
@@ -188,21 +194,16 @@ class Installer:
 
     def setup_firewall(self):
         """
-        Sets up and enables the UFW firewall with default rules.
+        Sets up the firewall by executing a custom script.
 
-        This method installs UFW if it is not already installed, enables it,
-        sets the default incoming and outgoing rules, and displays the firewall status.
+        This method runs a shell script located in the specified directory
+        to configure the firewall settings. The script is executed as a
+        subprocess, and a message is displayed to indicate the operation.
 
-        Returns
-        -------
-        None
-
-        Notes
-        -----
-        - Incoming connections are denied by default.
-        - Outgoing connections are allowed by default.
+        Raises:
+            subprocess.SubprocessError: If the subprocess execution fails.
         """
-        self.execute_subprocess("sudo apt install ufw -y && sudo ufw enable && sudo ufw default deny incoming && sudo ufw default allow outgoing && sudo ufw status verbose", "Installing UFW firewall...")
+        self.execute_subprocess(f"{SCRIPT_DIR}/scripts/custom/Firewalls/ufw.sh", "Setting up the Firewall...")
 
     def setup_dns(self, server):
         """
@@ -212,3 +213,18 @@ class Installer:
         :type server: str
         """
         self.execute_subprocess(f"{SCRIPT_DIR}/scripts/custom/dns.sh {server}", f"Setting up {server} DNS...")
+    
+    def setup_vpn(self, client):
+        """
+        Set up a VPN client by executing the corresponding setup script.
+
+        This method runs a shell script located in the custom VPNs directory
+        to configure the specified VPN client.
+
+        :param client: The name of the VPN client to set up. This should match
+                       the name of the corresponding shell script (without the .sh extension).
+                       Example: 'openvpn', 'wireguard'.
+        :type client: str
+        :raises subprocess.CalledProcessError: If the subprocess execution fails.
+        """
+        self.execute_subprocess(f"{SCRIPT_DIR}/scripts/custom/VPNs/{client}.sh", f"Setting up {client.capitalize()} VPN...")
