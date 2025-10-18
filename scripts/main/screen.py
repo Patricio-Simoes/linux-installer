@@ -207,7 +207,7 @@ class Screen:
                         or the selected item string if False.
         """
         current_row = 0
-        selected_indices = [] if multiple else -1  # Track multiple selections or single selection
+        selected_indices = [] if multiple else -1
         finished = False
 
         while not finished:
@@ -215,7 +215,6 @@ class Screen:
             self.display_ascii_menu()
             self.display_str(title, 0, FIRST_ROW)
 
-            # Display items with appropriate selection indicators
             for idx, item in enumerate(items):
                 col = idx % max_columns
                 row = idx // max_columns + FIRST_ROW + 2
@@ -233,7 +232,6 @@ class Screen:
                 except curses.error:
                     pass
 
-            # Display selected summary
             if multiple:
                 selected_list = [items[idx] for idx in selected_indices] if selected_indices else []
                 summary_str = "Selected: " + (", ".join(selected_list) if selected_list else "None")
@@ -259,22 +257,21 @@ class Screen:
             elif self.is_key_toggle_select(key):
                 if multiple:
                     if current_row in selected_indices:
-                        selected_indices.remove(current_row)  # Deselect
+                        selected_indices.remove(current_row)
                     else:
-                        selected_indices.append(current_row)  # Select
+                        selected_indices.append(current_row)
                 else:
-                    selected_indices = current_row  # Set selected index to current row for single selection
+                    selected_indices = current_row
             elif self.is_key_select(key):
-                if multiple or selected_indices != -1:  # Finish if multiple selection or valid single selection
+                if multiple or selected_indices != -1:
                     finished = True
 
-            # Ensure current_row is within valid bounds
             current_row = max(0, min(current_row, len(items) - 1))
 
         self.close()
         
         if multiple:
-            return [items[idx] for idx in selected_indices]  # Return list of selected items
+            return [items[idx] for idx in selected_indices]
         if selected_indices != -1:
-            return items[selected_indices]  # Return format for single selection
-        return None  # Return None if no selection was made
+            return items[selected_indices]
+        return None

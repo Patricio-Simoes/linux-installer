@@ -1,4 +1,4 @@
-CATEGORIES = ["0. Exit", "1. Applications", "2. DNS Servers", "3. VPN Clients"]
+CATEGORIES = ["0. Exit", "1. Applications", "2. DNS Servers", "3. VPN Clients", "4. System Utilities"]
 
 COMMON = {
     "FONTS": [
@@ -43,6 +43,8 @@ ENVIRONMENTS = [
             "sddm-theme-breeze ",
         ],
     },
+    #! If Wayland session is missing when using the proprietary nvidia drivers, use:
+    #! ln -s /dev/null /etc/udev/rules.d/61-gdm.rules
     {
         "Name": "Minimal Gnome",
         "Debian_Packages": [
@@ -54,6 +56,8 @@ ENVIRONMENTS = [
         ],
     },
 ]
+
+SYSTEM_UTILITIES = ["0. Exit", "1. Nvidia Drivers"]
 
 BROWSERS = [
     {

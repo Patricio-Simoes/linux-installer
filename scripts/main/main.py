@@ -17,6 +17,9 @@ def install():
 
     installer.install_environment(list(env_pkgs))
     installer.install_app_packages()
+
+    if NVIDIA:
+        installer.install_nvidia_drivers()
     
     if VPN != "":
         installer.setup_vpn(VPN)
@@ -97,6 +100,13 @@ while True:
                 if input == "0. Exit":
                     break
                 VPN = (input.split(" ", 1)[1]).lower()
+                break
+        case "4. System Utilities":
+            while True:
+                input = read_input(packages.SYSTEM_UTILITIES, multiple_allowed=False)
+                if input == "0. Exit":
+                    break
+                NVIDIA = True
                 break
 
 ENVIRONMENT_PACKAGES = list(env_pkgs)
