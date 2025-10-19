@@ -1,19 +1,44 @@
-CATEGORIES = ["0. Exit", "1. Applications", "2. DNS Servers", "3. VPN Clients", "4. System Utilities"]
+CATEGORIES = [
+    "0. Exit",
+    "1. Applications",
+    "2. Containers",
+    "3. DNS Servers",
+    "4. System Utilities",
+    "5. VPN Clients",
+]
 
 COMMON = {
     "FONTS": [
         {
             "Distro": "debian",
-            "Packages": ["fonts-font-awesome", "fonts-recommended", "fonts-roboto", "fonts-terminus"]
+            "Packages": [
+                "fonts-font-awesome",
+                "fonts-recommended",
+                "fonts-roboto",
+                "fonts-terminus",
+            ],
         }
     ],
-
     "UTILITY_PACKAGES": [
         {
             "Distro": "debian",
-            "Packages": ["curl", "fastfetch", "flatpak", "git", "gnupg2", "gpg", "libavcodec-extra", "libspa-0.2-bluetooth", "pipewire", "pipewire-alsa", "pipewire-pulse", "vim", "zram-tools"]
+            "Packages": [
+                "curl",
+                "fastfetch",
+                "flatpak",
+                "git",
+                "gnupg2",
+                "gpg",
+                "libavcodec-extra",
+                "libspa-0.2-bluetooth",
+                "pipewire",
+                "pipewire-alsa",
+                "pipewire-pulse",
+                "vim",
+                "zram-tools",
+            ],
         }
-    ]
+    ],
 }
 
 APP_CATEGORIES = [
@@ -35,7 +60,11 @@ VPN_CLIENTS = ["0. Exit", "1. Mullvad", "2. Proton"]
 
 ENVIRONMENTS = [
     {
-        "Name": "Minimal KDE",
+        "Name": "0. Skip",
+        "Debian_Packages": [""],
+    },
+    {
+        "Name": "1. KDE",
         "Debian_Packages": [
             "kde-plasma-desktop",
             "plasma-discover-backend-flatpak",
@@ -46,18 +75,33 @@ ENVIRONMENTS = [
     #! If Wayland session is missing when using the proprietary nvidia drivers, use:
     #! ln -s /dev/null /etc/udev/rules.d/61-gdm.rules
     {
-        "Name": "Minimal Gnome",
+        "Name": "2. Gnome",
         "Debian_Packages": [
             "gnome-session",
             "gnome-software-plugin-flatpak",
             "gnome-terminal",
             "gnome-text-editor",
-            "nautilus"
+            "nautilus",
         ],
     },
+    {
+        "Name": "3. XFCE",
+        "Debian_Packages": [
+            "xfce4",
+        ],
+    }
 ]
 
 SYSTEM_UTILITIES = ["0. Exit", "1. Nvidia Drivers"]
+
+CONTAINER_BACKENDS = ["0. Exit", "1. Distrobox (Docker)", "2. Distrobox (Podman)"]
+
+CONTAINERS = [
+    {
+        "Type": "Distrobox",
+        "Name": "1. Development"
+    }
+]
 
 BROWSERS = [
     {
@@ -126,7 +170,7 @@ ENCRYPTION_TOOLS = [
     {
         "Name": "Veracrypt",
         "APT_Package": "",
-        "Custom_Script": "$SCRIPT_DIR/scripts/custom/veracrypt.sh",
+        "Custom_Script": "$SCRIPT_DIR/scripts/custom/Apps/veracrypt.sh",
         "Flatpak_Package": "",
     },
 ]

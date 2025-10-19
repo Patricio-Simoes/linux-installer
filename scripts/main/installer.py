@@ -124,7 +124,7 @@ class Installer:
         ENVIRONMENT_STR = "sudo apt install -y " + " ".join(packages)
         SYSTEM_UPDATE_STR = "sudo apt update --fix-missing && sudo apt upgrade -y"
         self.execute_subprocess(SYSTEM_UPDATE_STR, "Updating system packages...")
-        self.execute_subprocess(ENVIRONMENT_STR)
+        self.execute_subprocess(ENVIRONMENT_STR, "Installing selected environment packages...")
         
     def install_app_packages(self):
         """
@@ -212,7 +212,7 @@ class Installer:
         :param server: The DNS server address to configure.
         :type server: str
         """
-        self.execute_subprocess(f"{SCRIPT_DIR}/scripts/custom/dns.sh {server}", f"Setting up {server} DNS...")
+        self.execute_subprocess(f"{SCRIPT_DIR}/scripts/custom/System_Utilities/dns.sh {server}", f"Setting up {server} DNS...")
     
     def setup_vpn(self, client):
         """
@@ -241,3 +241,29 @@ class Installer:
             subprocess.SubprocessError: If the subprocess execution fails.
         """
         self.execute_subprocess(f"{SCRIPT_DIR}/scripts/custom/System_Utilities/nvidia_drivers.sh", "Installing NVIDIA drivers...")
+    
+    def setup_container_engine(self, backend, tool):
+        """
+        Sets up the specified container backend & tool by executing the corresponding setup scripts.
+
+        :param backend: The name of the container backend to set up (e.g., "docker", "podman").
+        :param tool: The name of the tool used to manage containers (e.g., "distrobox").
+        :type backend: str
+        :raises subprocess.CalledProcessError: If the setup script execution fails.
+        """
+        self.execute_subprocess(f"{SCRIPT_DIR}/scripts/custom/Containers/{backend.lower()}.sh", f"Setting up {backend.capitalize()}...")
+        self.execute_subprocess(f"{SCRIPT_DIR}/scripts/custom/Containers/{tool.lower()}.sh", f"Setting up {tool.capitalize()}...")
+    
+    def install_containers(self, containers):
+        """
+        Sets up the specified container backend & tool by executing the corresponding setup scripts.
+
+        :param backend: The name of the container backend to set up (e.g., "docker", "podman").
+        :param tool: The name of the tool used to manage containers (e.g., "distrobox").
+        :type backend: str
+        :raises subprocess.CalledProcessError: If the setup script execution fails.
+        """
+        for container in containers:
+            for cont in packages.CONTAINERS:
+                if cont["Name"] == container:
+                    self.execute_subprocess(f"{SCRIPT_DIR}/containers/{cont["Type"].lower()}/install.sh {cont["Name"].split(" ", 1)[1]}", f"Setting up {cont["Name"].split(" ", 1)[1]} container...")

@@ -10,6 +10,8 @@ This project provides a modular and extensible Linux installation toolkit, inclu
 
 - logs/ : Generated during `init.sh` executing; Folder containing installation logs.
 
+- containers/ : Contains container `.ini` files and custom install scripts
+
 - scripts/main/ : Contains the main Python modules and utilities for the installer:
 
   - `ascii_art.py`: ASCII art utilities for terminal output.
