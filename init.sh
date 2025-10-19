@@ -37,9 +37,25 @@ fi
 if [[ " ${SUPPORTED_DISTROS[@]} " =~ " $DISTRO_ID " ]]; then
     if [ "$DISTRO_ID" == "debian" ]; then
         #? Install Python if not yet installed.
-        command -v python3 >/dev/null 2>&1 || sudo apt install python3 -y
+        command -v python3 >/dev/null 2>&1 || sudo apt install python3 -y >/dev/null 2>&1
         #? Enable contrib & non-free repos for Debian.
-        sudo sed -i 's/main/main non-free contrib/g' /etc/apt/sources.list
+        if grep -q '\bnon-free\b' /etc/apt/sources.list && grep -q '\bcontrib\b' /etc/apt/sources.list; then
+            echo "Contrib and non-free repositories are already enabled."
+        else
+            sudo sed -i 's/main/main non-free contrib/g' /etc/apt/sources.list
+        fi
+        #? Setup pipewire & wireplumber.
+        if dpkg -l | grep -q wireplumber; then
+            echo "WirePlumber is already installed."
+        else
+            sudo apt install wireplumber -y >/dev/null 2>&1
+        fi
+        if systemctl --user is-enabled wireplumber.service &>/dev/null; then
+            echo "WirePlumber service is already enabled."
+        else
+            systemctl --user --now enable wireplumber.service
+        fi
+        systemctl --user restart wireplumber pipewire pipewire-pulse
     fi
 else
     exit "Distro $DISTRO_ID is not supported. Supported distros are: ${SUPPORTED_DISTROS[*]}"

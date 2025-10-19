@@ -143,6 +143,12 @@ DEV_TOOLS = [
         "Custom_Script": "",
         "Flatpak_Package": "org.filezillaproject.Filezilla",
     },
+    {
+        "Name": "Virt Manager",
+        "APT_Package": "",
+        "Custom_Script": "$SCRIPT_DIR/scripts/custom/Apps/virt-manager.sh",
+        "Flatpak_Package": "",
+    }
 ]
 
 EMAIL_CLIENTS = [
