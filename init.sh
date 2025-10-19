@@ -2,18 +2,13 @@
 
 export SUPPORTED_DISTROS=("debian")
 
-exit() {
-    echo "$1"
-    command exit 0 
-}
-
 check_and_source_file() {
     local SOURCE_FILE=${1}
 
     if [[ -f "$SOURCE_FILE" ]]; then
         source "$SOURCE_FILE"
     else
-        echo "Error: $SOURCE_FILE not found." >&2
+        echo "Error: $SOURCE_FILE not found."
         exit 1
     fi
 }
@@ -23,10 +18,11 @@ export SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 export LOG_DIR="$SCRIPT_DIR/logs"
 
-chmod 700 "$SCRIPT_DIR/scripts/custom/"*.sh
-chmod 700 "$SCRIPT_DIR/scripts/custom/VPNs/"*.sh
+chmod 700 "$SCRIPT_DIR/scripts/custom/Containers/"*.sh
+chmod 700 "$SCRIPT_DIR/containers/distrobox/install.sh"
 chmod 700 "$SCRIPT_DIR/scripts/custom/Firewalls/"*.sh
 chmod 700 "$SCRIPT_DIR/scripts/custom/System_Utilities/"*.sh
+chmod 700 "$SCRIPT_DIR/scripts/custom/VPNs/"*.sh
 
  mkdir -p "$LOG_DIR"
 
@@ -34,7 +30,8 @@ chmod 700 "$SCRIPT_DIR/scripts/custom/System_Utilities/"*.sh
 if [ -f /etc/os-release ];then
     export DISTRO_ID=$(grep '^ID=' /etc/os-release | cut -d'=' -f2 | tr -d '"')
 else
-    exit "Could not determine distro."
+    echo "Could not determine distro."
+    exit 1
 fi
 
 if [[ " ${SUPPORTED_DISTROS[@]} " =~ " $DISTRO_ID " ]]; then

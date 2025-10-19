@@ -9,20 +9,28 @@ def read_input(list, multiple_allowed):
     return input
 
 def install():
-    installer.filter_app_packages(PACKAGES)
 
     installer.setup_firewall()
-    if DNS != "":
-        installer.setup_dns(DNS)
-
-    installer.install_environment(list(env_pkgs))
-    installer.install_app_packages()
-
-    if NVIDIA:
-        installer.install_nvidia_drivers()
     
-    if VPN != "":
-        installer.setup_vpn(VPN)
+    if dns != "":
+        installer.setup_dns(dns)
+
+    if env_pkgs != []:
+        installer.install_environment(list(env_pkgs))
+    if app_pkgs != []:
+        installer.filter_app_packages(app_pkgs)
+        installer.install_app_packages()
+
+    if nvidia:
+        installer.install_nvidia_drivers()
+
+    if container_backend != "" and container_tool != "":
+        installer.setup_container_engine(container_backend, container_tool)
+        if "0. Exit" not in containers:
+            installer.install_containers(containers)
+        
+    if vpn != "":
+        installer.setup_vpn(vpn)
 
 screen = Screen()
 installer = Installer()
@@ -33,9 +41,12 @@ STARTING_INSTRUCTIONS = [
     "Press 'Enter' to select packages."
 ]
 
-DNS = ""
-VPN = ""
+dns = ""
+vpn = ""
+nvidia = False
+container_backend = ""
 
+env_pkgs = []
 browsers = []
 environment = []
 dev_tools = []
@@ -47,16 +58,17 @@ multimedia_tools = []
 note_taking_apps = []
 terminals = []
 
+app_pkgs = []
+
 environment = screen.display_menu(packages.ENVIRONMENTS, STARTING_INSTRUCTIONS)
 
-for env in packages.ENVIRONMENTS:
-    if environment[0] == env["Name"]:
-        env_pkgs = env["Debian_Packages"]
+if environment[0] != "0. Skip":
+    for env in packages.ENVIRONMENTS:
+        if environment[0] == env["Name"]:
+            env_pkgs = env["Debian_Packages"]
 
 while True:
     input = read_input(packages.CATEGORIES, multiple_allowed=False)
-    with open('output.txt', 'w') as file:
-        file.write(f"Input was: {input}\n")
 
     match input:
         case "0. Exit":
@@ -87,30 +99,32 @@ while True:
                         terminals = screen.display_menu(packages.TERMINALS, STARTING_INSTRUCTIONS)
                     case _:
                         pass
-        case "2. DNS Servers":
-            while True:
-                input = read_input(packages.DNS_SERVERS, multiple_allowed=False)
-                if input == "0. Exit":
-                    break
-                DNS = input.split(" ", 1)[1]
-                break
-        case "3. VPN Clients":
-            while True:
-                input = read_input(packages.VPN_CLIENTS, multiple_allowed=False)
-                if input == "0. Exit":
-                    break
-                VPN = (input.split(" ", 1)[1]).lower()
-                break
+        case "2. Containers":
+            container_backend = ""
+            container_tool = ""
+            input = read_input(packages.CONTAINER_BACKENDS, multiple_allowed=False)
+            if input != "0. Exit":
+                container_backend = input.split('(')[-1].strip(' )')
+                container_tool = input.split()[1]
+                container_list = ["0. Exit"]
+                for container in packages.CONTAINERS:
+                    if container["Type"] == container_tool:
+                        container_list.append(container["Name"])
+                containers = input = read_input(container_list, multiple_allowed=True)
+        case "3. DNS Servers":
+            input = read_input(packages.DNS_SERVERS, multiple_allowed=False)
+            if input != "0. Exit":
+                dns = input.split(" ", 1)[1]
         case "4. System Utilities":
-            while True:
-                input = read_input(packages.SYSTEM_UTILITIES, multiple_allowed=False)
-                if input == "0. Exit":
-                    break
-                NVIDIA = True
-                break
+            input = read_input(packages.SYSTEM_UTILITIES, multiple_allowed=False)
+            if input != "0. Exit":
+                nvidia = True
+        case "5. VPN Clients":
+            input = read_input(packages.VPN_CLIENTS, multiple_allowed=False)
+            if input != "0. Exit":
+                vpn = (input.split(" ", 1)[1]).lower()
 
-ENVIRONMENT_PACKAGES = list(env_pkgs)
-PACKAGES =  browsers + dev_tools + email_clients + encryption_tools + file_managers + gaming_packages + multimedia_tools + note_taking_apps + terminals
+app_pkgs =  browsers + dev_tools + email_clients + encryption_tools + file_managers + gaming_packages + multimedia_tools + note_taking_apps + terminals
 
 install()
 
