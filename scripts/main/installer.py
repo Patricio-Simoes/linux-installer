@@ -4,8 +4,9 @@ import packages
 import os
 import subprocess
 
-SCRIPT_DIR = os.environ['SCRIPT_DIR']
-LOG_DIR = os.environ['LOG_DIR']
+SCRIPT_DIR = os.environ["SCRIPT_DIR"]
+LOG_DIR = os.environ["LOG_DIR"]
+
 
 class Installer:
     def __init__(self):
@@ -35,25 +36,39 @@ class Installer:
         INSTALL_LOG_FILE_LOCATION : str
             Path to the log file for installation logs.
         """
-        self.DISTRO = os.environ['DISTRO_ID']
+        self.DISTRO = os.environ["DISTRO_ID"]
         self.FONT_PKGS = []
         self.UTILITY_PKGS = []
         for item in packages.COMMON["FONTS"]:
             if item["Distro"] == self.DISTRO:
-                self.FONT_PKGS=item["Packages"]
+                self.FONT_PKGS = item["Packages"]
         for item in packages.COMMON["UTILITY_PACKAGES"]:
             if item["Distro"] == self.DISTRO:
-                self.UTILITY_PKGS=item["Packages"]
-        self.all_packages = packages.BROWSERS + packages.DEV_TOOLS + packages.EMAIL_CLIENTS + packages.ENCRYPTION_TOOLS + packages.FILE_MANAGERS + packages.GAMING_PACKAGES + packages.MULTIMEDIA_TOOLS + packages.NOTE_TAKING_APPS + packages.TERMINALS
+                self.UTILITY_PKGS = item["Packages"]
+        self.all_packages = (
+            packages.BROWSERS
+            + packages.DEV_TOOLS
+            + packages.EMAIL_CLIENTS
+            + packages.ENCRYPTION_TOOLS
+            + packages.FILE_MANAGERS
+            + packages.GAMING_PACKAGES
+            + packages.MULTIMEDIA_TOOLS
+            + packages.NOTE_TAKING_APPS
+            + packages.TERMINALS
+        )
         self.apt_packages = []
         self.custom_packages = []
         self.flatpak_packages = ["com.github.tchx84.Flatseal"]
-        #? Set up logging configuration
+        # ? Set up logging configuration
         os.makedirs(LOG_DIR, exist_ok=True)
         CURRENT_DATE = datetime.now().strftime("%d_%m_%Y_%H-%M")
         LOG_FILE = f"Install_{CURRENT_DATE}.txt"
         self.INSTALL_LOG_FILE_LOCATION = os.path.join(LOG_DIR, LOG_FILE)
-        logging.basicConfig(filename=self.INSTALL_LOG_FILE_LOCATION, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+        logging.basicConfig(
+            filename=self.INSTALL_LOG_FILE_LOCATION,
+            level=logging.INFO,
+            format="%(asctime)s - %(levelname)s - %(message)s",
+        )
 
     def filter_app_packages(self, packages):
         """
@@ -85,7 +100,7 @@ class Installer:
         for selected_pkg in packages:
             for pkg in self.all_packages:
                 if selected_pkg == pkg["Name"]:
-                    #? Debian distros.
+                    # ? Debian distros.
                     if self.DISTRO in ["debian"]:
                         if pkg["Custom_Script"] != "":
                             self.custom_packages.append(pkg["Custom_Script"])
@@ -107,9 +122,13 @@ class Installer:
         APT_FONT_STR = f"sudo apt install -y {' '.join(self.FONT_PKGS)}"
         APT_UTILITY_STR = f"sudo apt install -y {' '.join(self.UTILITY_PKGS)}"
         APT_STR = f"sudo apt install -y {' '.join(self.apt_packages)}"
-        CUSTOM_STR = " ; ".join([f"bash {script}" for script in self.custom_packages]) if self.custom_packages else ""
+        CUSTOM_STR = (
+            " ; ".join([f"bash {script}" for script in self.custom_packages])
+            if self.custom_packages
+            else ""
+        )
         FLATPAK_STR = f"flatpak --user install -y {' '.join(self.flatpak_packages)}"
-        return APT_FONT_STR, APT_UTILITY_STR,CUSTOM_STR, APT_STR, FLATPAK_STR
+        return APT_FONT_STR, APT_UTILITY_STR, CUSTOM_STR, APT_STR, FLATPAK_STR
 
     def install_environment(self, packages):
         """
@@ -124,40 +143,46 @@ class Installer:
         ENVIRONMENT_STR = "sudo apt install -y " + " ".join(packages)
         SYSTEM_UPDATE_STR = "sudo apt update --fix-missing && sudo apt upgrade -y"
         self.execute_subprocess(SYSTEM_UPDATE_STR, "Updating system packages...")
-        self.execute_subprocess(ENVIRONMENT_STR, "Installing selected environment packages...")
-        
-    def install_app_packages(self):
+        self.execute_subprocess(
+            ENVIRONMENT_STR, "Installing selected environment packages..."
+        )
+
+    def install_app_packages(self, all):
         """
-        Installs application packages using various package managers and custom scripts.
+        Install application packages using various package managers and custom scripts.
 
-        This method builds installation commands for fonts, utilities, custom scripts,
-        APT packages, and Flatpak packages. It executes each command sequentially,
-        providing status messages for certain steps. The Flathub Flatpak repository is
-        added at the user level if not already present.
+        This method installs font packages, utility packages, and sets up zram. 
+        It also adds the Flathub repository at the user level. If the `all` parameter 
+        is set to True, it executes additional installation commands for custom scripts, 
+        APT packages, and Flatpak packages.
 
-        Returns
-        -------
-        None
-
-        Notes
-        -----
-        - The installation commands are generated by `build_app_install_commands()`.
-        - Custom installation scripts are executed only if specified.
-        - APT and Flatpak package installations are performed only if their respective
-          command strings are not empty.
+        :param all: A boolean flag indicating whether to install all packages, 
+                    including custom scripts, APT packages, and Flatpak packages.
+        :type all: bool
         """
-        APT_FONT_STR, APT_UTILITY_STR, CUSTOM_STR, APT_STR, FLATPAK_STR = self.build_app_install_commands()
+        APT_FONT_STR, APT_UTILITY_STR, CUSTOM_STR, APT_STR, FLATPAK_STR = (
+            self.build_app_install_commands()
+        )
         self.execute_subprocess(APT_FONT_STR, "Installing font packages...")
         self.execute_subprocess(APT_UTILITY_STR, "Installing utility packages...")
-        self.execute_subprocess("flatpak remote-add --if-not-exists --user flathub https://dl.flathub.org/repo/flathub.flatpakrepo", "Adding flathub repository at user level...")
-        if CUSTOM_STR != "":
-            self.execute_subprocess(CUSTOM_STR, "Executing custom installation scripts...")
-        if APT_STR != "":
-            self.execute_subprocess(APT_STR, "Installing APT packages...")
-        if FLATPAK_STR != "":
-            self.execute_subprocess(FLATPAK_STR, "Installing Flatpak packages...")
-    
-    def execute_subprocess(self, command, description = ""):
+        self.execute_subprocess(
+            f"{SCRIPT_DIR}/scripts/custom/System_Utilities/zram.sh", "Setting up zram..."
+        )
+        self.execute_subprocess(
+            "flatpak remote-add --if-not-exists --user flathub https://dl.flathub.org/repo/flathub.flatpakrepo",
+            "Adding flathub repository at user level...",
+        )
+        if all:
+            if CUSTOM_STR != "":
+                self.execute_subprocess(
+                    CUSTOM_STR, "Executing custom installation scripts..."
+                )
+            if APT_STR != "":
+                self.execute_subprocess(APT_STR, "Installing APT packages...")
+            if FLATPAK_STR != "":
+                self.execute_subprocess(FLATPAK_STR, "Installing Flatpak packages...")
+
+    def execute_subprocess(self, command, description=""):
         """
         Executes a shell command as a subprocess and logs the result.
 
@@ -184,13 +209,21 @@ class Installer:
             print(f"Executing {command}...")
         else:
             print(description)
-        result = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        result = subprocess.run(
+            command,
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
         if result.returncode == 0:
             print("Command executed with success!")
             logging.info(f"SUCCESS: {command}\nOutput: {result.stdout.strip()}")
         else:
             print("Command encountered an unexpected error.")
-            logging.error(f"ERROR: {command}\nReturn Code: {result.returncode}\nOutput: {result.stdout.strip()}\nError: {result.stderr.strip()}")
+            logging.error(
+                f"ERROR: {command}\nReturn Code: {result.returncode}\nOutput: {result.stdout.strip()}\nError: {result.stderr.strip()}"
+            )
 
     def setup_firewall(self):
         """
@@ -203,7 +236,10 @@ class Installer:
         Raises:
             subprocess.SubprocessError: If the subprocess execution fails.
         """
-        self.execute_subprocess(f"{SCRIPT_DIR}/scripts/custom/Firewalls/ufw.sh", "Setting up the Firewall...")
+        self.execute_subprocess(
+            f"{SCRIPT_DIR}/scripts/custom/Firewalls/ufw.sh",
+            "Setting up the Firewall...",
+        )
 
     def setup_dns(self, server):
         """
@@ -212,8 +248,11 @@ class Installer:
         :param server: The DNS server address to configure.
         :type server: str
         """
-        self.execute_subprocess(f"{SCRIPT_DIR}/scripts/custom/System_Utilities/dns.sh {server}", f"Setting up {server} DNS...")
-    
+        self.execute_subprocess(
+            f"{SCRIPT_DIR}/scripts/custom/System_Utilities/dns.sh {server}",
+            f"Setting up {server} DNS...",
+        )
+
     def setup_vpn(self, client):
         """
         Set up a VPN client by executing the corresponding setup script.
@@ -227,7 +266,10 @@ class Installer:
         :type client: str
         :raises subprocess.CalledProcessError: If the subprocess execution fails.
         """
-        self.execute_subprocess(f"{SCRIPT_DIR}/scripts/custom/VPNs/{client}.sh", f"Setting up {client.capitalize()} VPN...")
+        self.execute_subprocess(
+            f"{SCRIPT_DIR}/scripts/custom/VPNs/{client}.sh",
+            f"Setting up {client.capitalize()} VPN...",
+        )
 
     def install_nvidia_drivers(self):
         """
@@ -240,8 +282,11 @@ class Installer:
         Raises:
             subprocess.SubprocessError: If the subprocess execution fails.
         """
-        self.execute_subprocess(f"{SCRIPT_DIR}/scripts/custom/System_Utilities/nvidia_drivers.sh", "Installing NVIDIA drivers...")
-    
+        self.execute_subprocess(
+            f"{SCRIPT_DIR}/scripts/custom/System_Utilities/nvidia_drivers.sh",
+            "Installing NVIDIA drivers...",
+        )
+
     def setup_container_engine(self, backend, tool):
         """
         Sets up the specified container backend & tool by executing the corresponding setup scripts.
@@ -251,9 +296,15 @@ class Installer:
         :type backend: str
         :raises subprocess.CalledProcessError: If the setup script execution fails.
         """
-        self.execute_subprocess(f"{SCRIPT_DIR}/scripts/custom/Containers/{backend.lower()}.sh", f"Setting up {backend.capitalize()}...")
-        self.execute_subprocess(f"{SCRIPT_DIR}/scripts/custom/Containers/{tool.lower()}.sh", f"Setting up {tool.capitalize()}...")
-    
+        self.execute_subprocess(
+            f"{SCRIPT_DIR}/scripts/custom/Containers/{backend.lower()}.sh",
+            f"Setting up {backend.capitalize()}...",
+        )
+        self.execute_subprocess(
+            f"{SCRIPT_DIR}/scripts/custom/Containers/{tool.lower()}.sh",
+            f"Setting up {tool.capitalize()}...",
+        )
+
     def install_containers(self, containers):
         """
         Sets up the specified container backend & tool by executing the corresponding setup scripts.
@@ -266,4 +317,7 @@ class Installer:
         for container in containers:
             for cont in packages.CONTAINERS:
                 if cont["Name"] == container:
-                    self.execute_subprocess(f"{SCRIPT_DIR}/containers/{cont["Type"].lower()}/install.sh {cont["Name"].split(" ", 1)[1]}", f"Setting up {cont["Name"].split(" ", 1)[1]} container...")
+                    self.execute_subprocess(
+                        f"{SCRIPT_DIR}/containers/{cont['Type'].lower()}/install.sh {cont['Name'].split(' ', 1)[1]}",
+                        f"Setting up {cont['Name'].split(' ', 1)[1]} container...",
+                    )

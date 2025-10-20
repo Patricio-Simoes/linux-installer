@@ -2,24 +2,27 @@ from installer import Installer
 import packages
 from screen import Screen
 
+
 def read_input(list, multiple_allowed):
     input = screen.display_categories(list, multiple=multiple_allowed)
     if not input:
         return read_input(list)
     return input
 
-def install():
 
+def install():
     installer.setup_firewall()
-    
+
     if dns != "":
         installer.setup_dns(dns)
 
     if env_pkgs != []:
         installer.install_environment(list(env_pkgs))
-    if app_pkgs != []:
-        installer.filter_app_packages(app_pkgs)
-        installer.install_app_packages()
+
+    install_all_pkgs = True if app_pkgs != [] else False
+
+    installer.filter_app_packages(app_pkgs)
+    installer.install_app_packages(all=install_all_pkgs)
 
     if nvidia:
         installer.install_nvidia_drivers()
@@ -28,9 +31,10 @@ def install():
         installer.setup_container_engine(container_backend, container_tool)
         if "0. Exit" not in containers:
             installer.install_containers(containers)
-        
+
     if vpn != "":
         installer.setup_vpn(vpn)
+
 
 screen = Screen()
 installer = Installer()
@@ -38,7 +42,7 @@ installer = Installer()
 STARTING_INSTRUCTIONS = [
     "Pick what you would like to install!",
     "Press 'Space' toggle selection.",
-    "Press 'Enter' to select packages."
+    "Press 'Enter' to select packages.",
 ]
 
 dns = ""
@@ -80,23 +84,41 @@ while True:
                     break
                 match input:
                     case "1. Browsers":
-                        browsers = screen.display_menu(packages.BROWSERS, STARTING_INSTRUCTIONS)
+                        browsers = screen.display_menu(
+                            packages.BROWSERS, STARTING_INSTRUCTIONS
+                        )
                     case "2. Dev Tools":
-                        dev_tools = screen.display_menu(packages.DEV_TOOLS, STARTING_INSTRUCTIONS)
+                        dev_tools = screen.display_menu(
+                            packages.DEV_TOOLS, STARTING_INSTRUCTIONS
+                        )
                     case "3. E-mail Clients":
-                        email_clients = screen.display_menu(packages.EMAIL_CLIENTS, STARTING_INSTRUCTIONS)
+                        email_clients = screen.display_menu(
+                            packages.EMAIL_CLIENTS, STARTING_INSTRUCTIONS
+                        )
                     case "4. Encryption Tools":
-                        encryption_tools = screen.display_menu(packages.ENCRYPTION_TOOLS, STARTING_INSTRUCTIONS)
+                        encryption_tools = screen.display_menu(
+                            packages.ENCRYPTION_TOOLS, STARTING_INSTRUCTIONS
+                        )
                     case "5. File Managers":
-                        file_managers = screen.display_menu(packages.FILE_MANAGERS, STARTING_INSTRUCTIONS)
+                        file_managers = screen.display_menu(
+                            packages.FILE_MANAGERS, STARTING_INSTRUCTIONS
+                        )
                     case "6. Gaming Packages":
-                        gaming_packages = screen.display_menu(packages.GAMING_PACKAGES, STARTING_INSTRUCTIONS)
+                        gaming_packages = screen.display_menu(
+                            packages.GAMING_PACKAGES, STARTING_INSTRUCTIONS
+                        )
                     case "7. Multimedia Tools":
-                        multimedia_tools = screen.display_menu(packages.MULTIMEDIA_TOOLS, STARTING_INSTRUCTIONS)
+                        multimedia_tools = screen.display_menu(
+                            packages.MULTIMEDIA_TOOLS, STARTING_INSTRUCTIONS
+                        )
                     case "8. Note Taking Tools":
-                        note_taking_apps = screen.display_menu(packages.NOTE_TAKING_APPS, STARTING_INSTRUCTIONS)
+                        note_taking_apps = screen.display_menu(
+                            packages.NOTE_TAKING_APPS, STARTING_INSTRUCTIONS
+                        )
                     case "9. Terminals":
-                        terminals = screen.display_menu(packages.TERMINALS, STARTING_INSTRUCTIONS)
+                        terminals = screen.display_menu(
+                            packages.TERMINALS, STARTING_INSTRUCTIONS
+                        )
                     case _:
                         pass
         case "2. Containers":
@@ -104,7 +126,7 @@ while True:
             container_tool = ""
             input = read_input(packages.CONTAINER_BACKENDS, multiple_allowed=False)
             if input != "0. Exit":
-                container_backend = input.split('(')[-1].strip(' )')
+                container_backend = input.split("(")[-1].strip(" )")
                 container_tool = input.split()[1]
                 container_list = ["0. Exit"]
                 for container in packages.CONTAINERS:
@@ -124,10 +146,22 @@ while True:
             if input != "0. Exit":
                 vpn = (input.split(" ", 1)[1]).lower()
 
-app_pkgs =  browsers + dev_tools + email_clients + encryption_tools + file_managers + gaming_packages + multimedia_tools + note_taking_apps + terminals
+app_pkgs = (
+    browsers
+    + dev_tools
+    + email_clients
+    + encryption_tools
+    + file_managers
+    + gaming_packages
+    + multimedia_tools
+    + note_taking_apps
+    + terminals
+)
 
 install()
 
-print(f"Installation complete!\n"
-      "Check install logs under logs/\n"
-      "Please restart your computer.")
+print(
+    f"Installation complete!\n"
+    "Check install logs under logs/\n"
+    "Please restart your computer."
+)

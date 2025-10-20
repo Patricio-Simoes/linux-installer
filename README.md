@@ -16,6 +16,12 @@ This project provides a modular and extensible Linux installation toolkit, inclu
 
   - `ascii_art.py`: ASCII art utilities for terminal output.
   - `installer.py`: Core installation logic and workflow.
+    - **Packaging Formats**
+      - The scripts will prefer native packages over anything else. Currently, the order is as follows:
+        1. Custom scripts (e.g. APT packages not on the official repos);
+        2. APT packages;
+        3. Flatpak
+
   - `main.py`: Entry point for the installer.
   - `packages.py`: Package management and installation routines.
   - `screen.py`: Terminal screen and selection utilities.
