@@ -38,6 +38,7 @@ for ip in ${SERVERS[$DNS_SERVER]}; do
 done
 
 sudo chattr +i /etc/resolv.conf
+
 if [[ $? -ne 0 ]]; then
     echo "Failed to make resolv.conf immutable"
     exit 1

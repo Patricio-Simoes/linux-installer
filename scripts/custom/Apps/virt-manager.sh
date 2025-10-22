@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+# ----------------------------------------------------------------------------
+# This script installs virt-manager &  adds the current user to the necessary groups.
+# to allow usage without requiring sudo.
+# ----------------------------------------------------------------------------
+
 if [ "$DISTRO_ID" = "debian" ]; then
     sudo apt install -y qemu-kvm qemu-guest-agent libvirt-daemon libvirt-clients bridge-utils virt-manager
 
